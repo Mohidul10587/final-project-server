@@ -3,7 +3,7 @@ const http = require('http');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
-const { response } = require('express');
+
 require('dotenv').config()
 
 const app = express()
@@ -25,7 +25,6 @@ function verifyJWT(req, res, next) {
     if (err) {
       return res.status(403).send({ massage: 'forbidden' })
     }
-
     req.decoded = decoded;
     next();
   });
@@ -45,6 +44,41 @@ async function run() {
       const service = await cursor.toArray();
       res.send(service)
     })
+
+    app.get('/user', verifyJWT, async (req, res) => {
+      const users = await usersCollection.find().toArray()
+      res.send(users)
+    })
+
+
+
+    app.get('/admin/:email', async (req, res) => {
+      const email = req.params.email
+      const user = await usersCollection.findOne({ email: email });
+      const isAdmin = user.roll === 'admin'
+      res.send({ admin: isAdmin })
+    })
+    app.put('/user/admin/:email', verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const requester = req.decoded.email
+      const requesterAccount = await usersCollection.findOne({ email: requester })
+
+      if (requesterAccount.roll === 'admin') {
+        const filter = { email: email };
+        const updateDoc = {
+
+          $set: { roll: 'admin' }
+        }
+        const result = await usersCollection.updateOne(filter, updateDoc)
+        res.send(result)
+      }
+      else {
+        res.status(403).send({ massage: 'Forbidden' })
+      }
+    })
+
+
+
     app.put('/user/:email', async (req, res) => {
       const email = req.params.email;
       const user = req.body;
@@ -86,8 +120,8 @@ async function run() {
         const bookings = await bookingCollection.find(query).toArray()
         res.send(bookings)
       }
-      else{
-        return res.status(403).send({massage:"forbidden access"})
+      else {
+        return res.status(403).send({ massage: "forbidden access" })
       }
 
     })
