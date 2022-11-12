@@ -32,9 +32,6 @@ function verifyJWT(req, res, next) {
 }
 
 
-app.get('/',(req,res)=>{
-  res.send('hello')
-})
 
 
 async function run() {
@@ -45,7 +42,11 @@ async function run() {
     const bookingCollection = client.db('doctors_portal').collection('booking')
     const usersCollection = client.db('doctors_portal').collection('users')
 
+    app.get('/', async (req, res) => {
+             
+      res.send('This is first deployment in heroku')
 
+  })
     app.get('/service', async (req, res) => {
       const query = {};
       const cursor = serviceCollection.find(query);
