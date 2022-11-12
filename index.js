@@ -29,6 +29,13 @@ function verifyJWT(req, res, next) {
     next();
   });
 }
+
+
+app.get('/',(req,res=>{
+  res.send("hello")
+}))
+
+
 async function run() {
   try {
     await client.connect()
