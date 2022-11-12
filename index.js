@@ -3,6 +3,7 @@ const http = require('http');
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
+const { read } = require('fs');
 
 require('dotenv').config()
 
@@ -31,9 +32,9 @@ function verifyJWT(req, res, next) {
 }
 
 
-app.get('/',(req,res=>{
-  res.send("hello")
-}))
+app.get('/',(req,res)=>{
+  res.send('hello')
+})
 
 
 async function run() {
