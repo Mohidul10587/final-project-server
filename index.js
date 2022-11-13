@@ -4,6 +4,7 @@ const { MongoClient, ServerApiVersion } = require('mongodb');
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
 const { read } = require('fs');
+const { response } = require('express');
 
 require('dotenv').config()
 
@@ -33,10 +34,9 @@ function verifyJWT(req, res, next) {
 
 
 
-   app.get('/', async (req, res) => {
-             
-      res.send('This is first deployment in heroku')
-  })
+app.get('/', async (req, res) => {
+  res.send('This is first deployment in heroku')
+})
 async function run() {
   try {
     await client.connect()
@@ -44,11 +44,13 @@ async function run() {
     const serviceCollection = client.db('doctors_portal').collection('services')
     const bookingCollection = client.db('doctors_portal').collection('booking')
     const usersCollection = client.db('doctors_portal').collection('users')
+    const doctorsCollection = client.db('doctors_portal').collection('doctors')
 
- 
+
+
     app.get('/service', async (req, res) => {
       const query = {};
-      const cursor = serviceCollection.find(query);
+      const cursor = serviceCollection.find(query).project({ name: 1 });
       const service = await cursor.toArray();
       res.send(service)
     })
@@ -144,9 +146,23 @@ async function run() {
       const result = await bookingCollection.insertOne(booking);
       return res.send({ success: true, result });
     })
+
+
+    app.post('/doctor', async(req, res) => {
+      const doctor = req.body;
+      const result = await doctorsCollection.insertOne(doctor);
+      res.send(result);
+
+    })
+
+
   } finally {
 
   }
+
+
+
+
   // sudo /opt/lampp/./manager-linux-x64.run
 
 
