@@ -5,6 +5,10 @@ const jwt = require('jsonwebtoken')
 const cors = require('cors');
 const { read } = require('fs');
 const { response } = require('express');
+const nodemailer = require("nodemailer")
+const nodemailer = require("nodemailer")
+const sgTransport = require("nodemailer-sendgrid-transport")
+
 
 require('dotenv').config()
 
@@ -33,6 +37,19 @@ function verifyJWT(req, res, next) {
 }
 
 
+var options = {
+  auth:{
+    api_key: process.env.EMAIL_SENDER_KEY
+  }
+}
+
+
+const emailClient = nodemailer.createTransport(sgTransport(options));
+
+function emailSendHandler(booking) {
+  const { patient, patientName, date, slot } = booking;
+
+}
 
 app.get('/', async (req, res) => {
   res.send('This is first deployment in heroku')
@@ -47,7 +64,7 @@ async function run() {
     const doctorsCollection = client.db('doctors_portal').collection('doctors')
 
 
-    const verifyAdmin = async (req,res,next) => {
+    const verifyAdmin = async (req, res, next) => {
       const requester = req.decoded.email
       const requesterAccount = await usersCollection.findOne({ email: requester })
 
@@ -145,11 +162,12 @@ async function run() {
         return res.send({ success: false, booking: exists })
       }
       const result = await bookingCollection.insertOne(booking);
+      emailSendHandler(booking)
       return res.send({ success: true, result });
     })
 
-  
-    app.get('/doctor', verifyJWT, verifyAdmin, async(req, res) =>{
+
+    app.get('/doctor', verifyJWT, verifyAdmin, async (req, res) => {
       const doctors = await doctorsCollection.find().toArray();
       res.send(doctors);
     })
@@ -164,7 +182,7 @@ async function run() {
     })
     app.delete('/doctor/:email', verifyJWT, verifyAdmin, async (req, res) => {
       const email = req.params.email;
-      const filter = {email: email};
+      const filter = { email: email };
       const result = await doctorsCollection.deleteOne(filter);
       res.send(result);
     })
@@ -176,7 +194,7 @@ async function run() {
 
 
 
-  // sudo /opt/lampp/./manager-linux-x64.run
+
 
 
 
@@ -188,3 +206,6 @@ run().catch(console.dir)
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+
+// sudo /opt/lampp/./manager-linux-x64.run
+// DoctorPortalEmailSender
